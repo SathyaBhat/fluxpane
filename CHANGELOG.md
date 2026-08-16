@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No changes yet.
 
+## [1.1.1] - 2026-08-16
+
+### Fixed
+- Windows release workflow now uses the Tauri v1-compatible GitHub Action
+- Existing GitHub Releases can be rebuilt through the manual workflow trigger
+
 ## [1.1.0] - 2026-08-16
 
 ### Added
