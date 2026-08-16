@@ -38,12 +38,13 @@ jobs:
           }
 
       - name: Build and publish Windows installers
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: FluxPane ${{ github.ref_name }}
+          tauriScript: npm run tauri
+          tagName: v__VERSION__
+          releaseName: FluxPane v__VERSION__
           releaseBody: Download the Windows installer from the release assets.
           releaseDraft: true
           prerelease: false
