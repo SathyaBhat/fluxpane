@@ -155,13 +155,22 @@ export default function ArticleList({
 
   const authors = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const e of entries) {
+    const isAll = selectedStatuses.includes('all') || selectedStatuses.length === 0;
+    const statusEntries = isAll
+      ? entries
+      : entries.filter(e =>
+        (selectedStatuses.includes('starred') && e.starred) ||
+        (selectedStatuses.includes('unread') && e.status === 'unread') ||
+        (selectedStatuses.includes('read') && e.status === 'read')
+      );
+
+    for (const e of statusEntries) {
       if (e.author) counts.set(e.author, (counts.get(e.author) ?? 0) + 1);
     }
     return Array.from(counts.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([name, count]) => ({ name, count }));
-  }, [entries]);
+  }, [entries, selectedStatuses]);
 
   // Reset author filter and pinned entries on feed/category switch
   useEffect(() => {

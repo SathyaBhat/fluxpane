@@ -21,25 +21,34 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
-  const [loading, setLoading] = useState(false);
   const [fullContent, setFullContent] = useState<string | null>(null);
 
   useEffect(() => {
     setFullContent(null);
-  }, [entry?.id]);
 
-  const handleFetchContent = async () => {
     if (!entry) return;
-    setLoading(true);
-    try {
-      const data = await miniflux.fetchEntryContent(entry.id);
-      setFullContent(data.content);
-    } catch (err) {
-      console.error('Failed to fetch content:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    let cancelled = false;
+
+    const fetchContent = async () => {
+      try {
+        const data = await miniflux.fetchEntryContent(entry.id);
+        if (!cancelled) {
+          setFullContent(data.content);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to fetch content:', err);
+        }
+      }
+    };
+
+    fetchContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [entry?.id]);
 
   const handleToggleBookmark = async () => {
     if (!entry) return;
@@ -65,9 +74,6 @@ export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
       <div className="article-view-header">
         <h3>{entry.feed.title}</h3>
         <div className="article-view-actions">
-          <button className="btn btn-secondary" onClick={handleFetchContent} disabled={loading}>
-            {loading ? '⏳' : '📄'} Fetch
-          </button>
           <button className="btn btn-secondary" onClick={handleToggleBookmark}>
             {entry.starred ? '⭐' : '☆'} Star
           </button>

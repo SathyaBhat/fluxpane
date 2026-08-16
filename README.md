@@ -10,7 +10,7 @@ A Windows desktop RSS reader powered by Miniflux API, built with Tauri + React.
 - 📂 View articles by feed or category
 - 📖 Clean reading experience with article view
 - ⭐ Star articles for later
-- 🌐 Fetch full article content
+- 🌐 Automatically fetch full article content
 - 🖥️ System tray integration
 - 🎨 Catppuccin theme system (Latte, Frappé, Macchiato, Mocha)
 
