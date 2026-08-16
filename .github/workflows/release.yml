@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to build and update
+        required: true
+        default: v1.1.0
 
 permissions:
   contents: write
@@ -11,6 +17,8 @@ permissions:
 jobs:
   publish:
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
     steps:
       - name: Check out repository
@@ -33,8 +41,8 @@ jobs:
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           $expectedTag = "v$version"
-          if ("${{ github.ref_name }}" -ne $expectedTag) {
-            throw "Release tag ${{ github.ref_name }} does not match app version $expectedTag"
+          if ("$env:RELEASE_TAG" -ne $expectedTag) {
+            throw "Release tag $env:RELEASE_TAG does not match app version $expectedTag"
           }
 
       - name: Build and publish Windows installers
@@ -46,6 +54,6 @@ jobs:
           tagName: v__VERSION__
           releaseName: FluxPane v__VERSION__
           releaseBody: Download the Windows installer from the release assets.
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           generateReleaseNotes: true
