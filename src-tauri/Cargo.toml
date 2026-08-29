@@ -1,6 +1,6 @@
 [package]
 name = "fluxpane"
-version = "1.1.1"
+version = "1.1.2"
 description = "FluxPane - A Miniflux RSS Reader"
 authors = ["you"]
 license = "MIT"
