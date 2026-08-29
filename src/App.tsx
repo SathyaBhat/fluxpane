@@ -26,6 +26,7 @@ function App() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [authorEntries, setAuthorEntries] = useState<Entry[]>([]);
   const [feedCounters, setFeedCounters] = useState<FeedCounters | null>(null);
   const [selectedFeedId, setSelectedFeedId] = useState<number | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -116,7 +117,24 @@ function App() {
         apiStarred,
         categoryId || undefined
       );
-      setEntries(data.entries);
+      const allEntries = [...data.entries];
+      let offset = data.entries.length;
+
+      while (offset < data.total && data.entries.length > 0) {
+        const page = await miniflux.getEntries(
+          feedId || undefined,
+          apiStatus,
+          undefined, undefined, 1000, offset,
+          apiStarred,
+          categoryId || undefined
+        );
+        allEntries.push(...page.entries);
+        if (page.entries.length === 0) break;
+        offset += page.entries.length;
+      }
+
+      setEntries(allEntries.slice(0, 100));
+      setAuthorEntries(allEntries);
       setTotalEntries(data.total);
     } catch (err) {
       console.error('Failed to load entries:', err);
@@ -180,6 +198,7 @@ function App() {
         await miniflux.updateEntries([entry.id], 'read');
         // Update in-place — keep the entry visible in the list
         setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'read' } : e));
+        setAuthorEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'read' } : e));
         setSelectedEntry(prev => prev?.id === entry.id ? { ...prev, status: 'read' } : prev);
         const counters = await miniflux.getFeedCounters();
         setFeedCounters(counters);
@@ -199,6 +218,7 @@ function App() {
     try {
       await miniflux.updateEntries(entryIds, 'read');
       setEntries(prev => prev.map(e => entryIds.includes(e.id) ? { ...e, status: 'read' } : e));
+      setAuthorEntries(prev => prev.map(e => entryIds.includes(e.id) ? { ...e, status: 'read' } : e));
       const counters = await miniflux.getFeedCounters();
       setFeedCounters(counters);
     } catch (err) {
@@ -297,6 +317,7 @@ function App() {
 
       <ArticleList
         entries={entries}
+        authorEntries={authorEntries}
         loading={loading}
         title={activeFeedTitle}
         count={totalEntries}

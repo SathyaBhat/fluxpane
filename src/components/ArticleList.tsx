@@ -4,6 +4,7 @@ import type { EntryFilter } from '../App';
 
 interface Props {
   entries: Entry[];
+  authorEntries: Entry[];
   loading: boolean;
   title: string;
   count: number;
@@ -105,6 +106,7 @@ function CheckItem({ checked, label, onClick, count }: { checked: boolean; label
 
 export default function ArticleList({
   entries,
+  authorEntries,
   loading,
   title,
   count,
@@ -157,8 +159,8 @@ export default function ArticleList({
     const counts = new Map<string, number>();
     const isAll = selectedStatuses.includes('all') || selectedStatuses.length === 0;
     const statusEntries = isAll
-      ? entries
-      : entries.filter(e =>
+      ? authorEntries
+      : authorEntries.filter(e =>
         (selectedStatuses.includes('starred') && e.starred) ||
         (selectedStatuses.includes('unread') && e.status === 'unread') ||
         (selectedStatuses.includes('read') && e.status === 'read')
@@ -170,7 +172,7 @@ export default function ArticleList({
     return Array.from(counts.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([name, count]) => ({ name, count }));
-  }, [entries, selectedStatuses]);
+  }, [authorEntries, selectedStatuses]);
 
   // Reset author filter and pinned entries on feed/category switch
   useEffect(() => {
