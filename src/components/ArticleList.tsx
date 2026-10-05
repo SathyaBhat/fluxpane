@@ -190,8 +190,8 @@ export default function ArticleList({
     }
   }, [selectedEntryId]);
 
-  const visibleEntries = useMemo(() => {
-    let result = entries;
+  const applyFilters = useCallback((base: Entry[]) => {
+    let result = base;
 
     // Client-side status filter — pinned entries (opened this session) always pass through
     const isAll = selectedStatuses.includes('all') || selectedStatuses.length === 0;
@@ -218,9 +218,20 @@ export default function ArticleList({
       );
     }
     return result;
-  }, [entries, selectedStatuses, selectedAuthors, searchQuery, pinnedIds]);
+  }, [selectedStatuses, selectedAuthors, searchQuery, pinnedIds]);
 
-  const unreadVisible = visibleEntries.filter(e => e.status === 'unread');
+  // `entries` is capped at the newest 100, but author counts come from `authorEntries`.
+  // With an author selected, list from the full set so the list matches the counts.
+  const visibleEntries = useMemo(
+    () => applyFilters(selectedAuthors.length > 0 ? authorEntries : entries),
+    [applyFilters, selectedAuthors, authorEntries, entries]
+  );
+
+  // Mark All Read covers every loaded matching entry, not just the capped list
+  const unreadVisible = useMemo(
+    () => applyFilters(authorEntries).filter(e => e.status === 'unread'),
+    [applyFilters, authorEntries]
+  );
 
   const handleStatusToggle = (value: EntryFilter) => {
     if (value === 'all') {

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No changes yet.
 
+## [1.3.1] - 2026-10-05
+
+### Fixed
+- Author dropdown counts now match the article list: selecting an author lists all of their loaded articles, not just those in the newest 100
+- "Mark All Read" now marks every loaded matching article, not just the first 100 shown, so author counts drop to zero correctly
+
 ## [1.3.0] - 2026-10-05
 
 ### Added
