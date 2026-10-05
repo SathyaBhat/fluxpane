@@ -160,6 +160,10 @@ class MinifluxClient {
     return this.get('/categories');
   }
 
+  async createCategory(title: string): Promise<Category> {
+    return this.post('/categories', { title });
+  }
+
   async createFeed(feedUrl: string, categoryId?: number): Promise<{ feed_id: number }> {
     return this.post('/feeds', {
       feed_url: feedUrl,

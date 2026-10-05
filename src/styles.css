@@ -841,6 +841,34 @@ body {
   font-size: 0.95rem;
 }
 
+.settings-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-toggle span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-toggle small {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;

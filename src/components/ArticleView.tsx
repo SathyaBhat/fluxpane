@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Entry } from '../types/miniflux';
 import { miniflux } from '../services/miniflux';
+import { openLink } from '../services/openLink';
 
 interface Props {
   entry: Entry | null;
   onClose: () => void;
   onToggleRead?: (entryId: number, currentStatus: 'read' | 'unread') => void;
+  openLinksInBrowser: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -20,7 +22,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
+export default function ArticleView({ entry, onClose, onToggleRead, openLinksInBrowser }: Props) {
   const [fullContent, setFullContent] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,9 +61,28 @@ export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
     }
   };
 
-  const handleOpenOriginal = () => {
+  const handleOpenOriginal = async () => {
     if (entry?.url) {
-      window.open(entry.url, '_blank');
+      try {
+        await openLink(entry.url, openLinksInBrowser);
+      } catch (err) {
+        console.error('Failed to open link:', err);
+      }
+    }
+  };
+
+  const handleContentClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!openLinksInBrowser) return;
+
+    const anchor = (event.target as HTMLElement).closest('a');
+    const href = anchor?.href;
+    if (!href) return;
+
+    event.preventDefault();
+    try {
+      await openLink(href, true);
+    } catch (err) {
+      console.error('Failed to open link:', err);
     }
   };
 
@@ -104,6 +125,7 @@ export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
         </div>
         <div 
           className="article-view-body"
+          onClick={handleContentClick}
           dangerouslySetInnerHTML={{ __html: content || '<p>No content available</p>' }}
         />
       </div>

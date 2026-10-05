@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No changes yet.
 
+## [1.2.0] - 2026-10-05
+
+### Added
+- Create a new category directly from the Add Feed dialog ("+ New category…" option)
+- Right-click a category name in the sidebar to add a feed to that category
+- "Open links in default browser" setting; applies to the article's original link, links inside article content, and the article context menu
+
 ## [1.1.2] - 2026-08-29
 
 ### Fixed

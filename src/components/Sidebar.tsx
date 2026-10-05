@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFavicon } from '../hooks/useFavicon';
 
 interface CategoryGroup {
@@ -14,7 +14,7 @@ interface Props {
   onCategorySelect: (categoryId: number, categoryTitle: string) => void;
   onSettings: () => void;
   onThemeSettings?: () => void;
-  onAddFeed: () => void;
+  onAddFeed: (categoryId?: number) => void;
   selectedFeedId: number | null;
   selectedCategoryId: number | null;
   showUnreadOnly: boolean;
@@ -61,6 +61,21 @@ export default function Sidebar({
       return new Set();
     }
   });
+
+  const [menu, setMenu] = useState<{ x: number; y: number; categoryId: number; categoryTitle: string } | null>(null);
+
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    // mousedown (not contextmenu) so the right-click that opened the menu doesn't close it
+    window.addEventListener('mousedown', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
 
   const toggleCategory = (e: React.MouseEvent, categoryId: number) => {
     e.stopPropagation();
@@ -125,6 +140,10 @@ export default function Sidebar({
                 <button
                   className="category-name-btn"
                   onClick={() => onCategorySelect(category.id, category.title)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setMenu({ x: e.clientX, y: e.clientY, categoryId: category.id, categoryTitle: category.title });
+                  }}
                   title={`Show all articles in ${category.title}`}
                 >
                   {category.title}
@@ -162,7 +181,7 @@ export default function Sidebar({
       </div>
 
       <div style={{ padding: '15px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onAddFeed}>
+        <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => onAddFeed()}>
           ➕ Add Feed
         </button>
         <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onSettings}>
@@ -174,6 +193,25 @@ export default function Sidebar({
           </button>
         )}
       </div>
+
+      {menu && (
+        <div
+          className="context-menu"
+          style={{ left: menu.x, top: menu.y }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <button
+            className="context-menu-item"
+            onClick={() => {
+              onAddFeed(menu.categoryId);
+              setMenu(null);
+            }}
+          >
+            ➕ Add feed to “{menu.categoryTitle}”
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

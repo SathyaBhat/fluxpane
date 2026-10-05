@@ -17,12 +17,15 @@ interface Config {
   apiKey: string;
 }
 
+const OPEN_LINKS_IN_BROWSER_KEY = 'fluxpane-open-links-in-browser';
+
 function App() {
   const { theme } = useTheme();
   const [config, setConfig] = useState<Config | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showThemeSettings, setShowThemeSettings] = useState(false);
   const [showAddFeed, setShowAddFeed] = useState(false);
+  const [addFeedCategoryId, setAddFeedCategoryId] = useState<number | undefined>();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -36,6 +39,9 @@ function App() {
   const [activeFeedTitle, setActiveFeedTitle] = useState('All Unread');
   const [showUnreadOnly, setShowUnreadOnly] = useState(() => {
     return localStorage.getItem('fluxpane-show-unread-only') === 'true';
+  });
+  const [openLinksInBrowser, setOpenLinksInBrowser] = useState(() => {
+    return localStorage.getItem(OPEN_LINKS_IN_BROWSER_KEY) === 'true';
   });
   const [selectedStatuses, setSelectedStatuses] = useState<EntryFilter[]>(['unread']);
 
@@ -234,6 +240,11 @@ function App() {
     });
   };
 
+  const handleOpenLinksInBrowserChange = (value: boolean) => {
+    localStorage.setItem(OPEN_LINKS_IN_BROWSER_KEY, String(value));
+    setOpenLinksInBrowser(value);
+  };
+
   const handleStatusChange = (statuses: EntryFilter[]) => {
     setSelectedStatuses(statuses);
     loadEntries(selectedFeedId || undefined, statuses, selectedCategoryId || undefined);
@@ -243,7 +254,10 @@ function App() {
     const newStatus = currentStatus === 'unread' ? 'read' : 'unread';
     try {
       await miniflux.updateEntries([entryId], newStatus);
-      setEntries(entries.map(e =>
+      setEntries(prev => prev.map(e =>
+        e.id === entryId ? { ...e, status: newStatus } : e
+      ));
+      setAuthorEntries(prev => prev.map(e =>
         e.id === entryId ? { ...e, status: newStatus } : e
       ));
       if (selectedEntry?.id === entryId) {
@@ -279,12 +293,15 @@ function App() {
           onClose={() => config && setShowSettings(false)}
           initialUrl={config?.baseUrl || ''}
           initialKey={config?.apiKey || ''}
+          openLinksInBrowser={openLinksInBrowser}
+          onOpenLinksInBrowserChange={handleOpenLinksInBrowserChange}
         />
       )}
 
       {showAddFeed && (
         <AddFeedModal
           categories={categories}
+          initialCategoryId={addFeedCategoryId}
           onClose={() => setShowAddFeed(false)}
           onAdded={loadFeeds}
         />
@@ -308,7 +325,10 @@ function App() {
         onCategorySelect={handleCategorySelect}
         onSettings={() => setShowSettings(true)}
         onThemeSettings={() => setShowThemeSettings(true)}
-        onAddFeed={() => setShowAddFeed(true)}
+        onAddFeed={(categoryId) => {
+          setAddFeedCategoryId(categoryId);
+          setShowAddFeed(true);
+        }}
         selectedFeedId={selectedFeedId}
         selectedCategoryId={selectedCategoryId}
         showUnreadOnly={showUnreadOnly}
@@ -325,6 +345,7 @@ function App() {
         onEntrySelect={handleEntrySelect}
         onRefresh={handleRefresh}
         onMarkAllRead={handleMarkAllRead}
+        openLinksInBrowser={openLinksInBrowser}
         selectedStatuses={selectedStatuses}
         onStatusChange={handleStatusChange}
         onToggleEntryRead={handleToggleEntryRead}
@@ -334,6 +355,7 @@ function App() {
         entry={selectedEntry}
         onClose={() => setSelectedEntry(null)}
         onToggleRead={handleToggleEntryRead}
+        openLinksInBrowser={openLinksInBrowser}
       />
     </div>
   );

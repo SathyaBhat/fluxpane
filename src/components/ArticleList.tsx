@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { Entry } from '../types/miniflux';
 import type { EntryFilter } from '../App';
+import { openLink } from '../services/openLink';
 
 interface Props {
   entries: Entry[];
@@ -15,6 +16,7 @@ interface Props {
   selectedStatuses: EntryFilter[];
   onStatusChange: (statuses: EntryFilter[]) => void;
   onToggleEntryRead?: (entryId: number, currentStatus: 'read' | 'unread') => void;
+  openLinksInBrowser: boolean;
 }
 
 interface ContextMenuState {
@@ -117,6 +119,7 @@ export default function ArticleList({
   selectedStatuses,
   onStatusChange,
   onToggleEntryRead,
+  openLinksInBrowser,
 }: Props) {
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     isOpen: false, x: 0, y: 0, entry: null,
@@ -255,10 +258,15 @@ export default function ArticleList({
     }
   };
 
-  const handleOpenOriginal = () => {
+  const handleOpenOriginal = async () => {
     if (contextMenu.entry?.url) {
-      window.open(contextMenu.entry.url, '_blank');
-      closeContextMenu();
+      try {
+        await openLink(contextMenu.entry.url, openLinksInBrowser);
+      } catch (err) {
+        console.error('Failed to open link:', err);
+      } finally {
+        closeContextMenu();
+      }
     }
   };
 

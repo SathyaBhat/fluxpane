@@ -4,13 +4,18 @@ import { miniflux } from '../services/miniflux';
 
 interface Props {
   categories: Category[];
+  initialCategoryId?: number;
   onClose: () => void;
   onAdded: () => void;
 }
 
-export default function AddFeedModal({ categories, onClose, onAdded }: Props) {
+const NEW_CATEGORY = '__new__';
+
+export default function AddFeedModal({ categories, initialCategoryId, onClose, onAdded }: Props) {
   const [feedUrl, setFeedUrl] = useState('');
-  const [categoryId, setCategoryId] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>(initialCategoryId ? String(initialCategoryId) : '');
+  const [newCategoryTitle, setNewCategoryTitle] = useState('');
+  const creatingCategory = categoryId === NEW_CATEGORY;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,7 +25,12 @@ export default function AddFeedModal({ categories, onClose, onAdded }: Props) {
     setError('');
 
     try {
-      await miniflux.createFeed(feedUrl.trim(), categoryId ? Number(categoryId) : undefined);
+      let targetCategoryId = categoryId && !creatingCategory ? Number(categoryId) : undefined;
+      if (creatingCategory) {
+        const created = await miniflux.createCategory(newCategoryTitle.trim());
+        targetCategoryId = created.id;
+      }
+      await miniflux.createFeed(feedUrl.trim(), targetCategoryId);
       onAdded();
       onClose();
     } catch (err) {
@@ -67,13 +77,27 @@ export default function AddFeedModal({ categories, onClose, onAdded }: Props) {
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.title}</option>
               ))}
+              <option value={NEW_CATEGORY}>+ New category…</option>
             </select>
           </div>
+          {creatingCategory && (
+            <div className="form-group">
+              <label>New category name</label>
+              <input
+                type="text"
+                value={newCategoryTitle}
+                onChange={(e) => setNewCategoryTitle(e.target.value)}
+                placeholder="e.g. Tech News"
+                required
+                autoFocus
+              />
+            </div>
+          )}
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary" disabled={submitting || !feedUrl.trim()}>
+            <button type="submit" className="btn btn-primary" disabled={submitting || !feedUrl.trim() || (creatingCategory && !newCategoryTitle.trim())}>
               {submitting ? 'Adding...' : 'Add Feed'}
             </button>
           </div>

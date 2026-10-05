@@ -6,6 +6,8 @@ interface Props {
   onClose: () => void;
   initialUrl?: string;
   initialKey?: string;
+  openLinksInBrowser: boolean;
+  onOpenLinksInBrowserChange: (value: boolean) => void;
 }
 
 // Check if running in Tauri environment
@@ -13,7 +15,14 @@ const isTauri = () => {
   return typeof window !== 'undefined' && (window as unknown as { __TAURI__: unknown }).__TAURI__ !== undefined;
 };
 
-export default function SettingsModal({ onSave, onClose, initialUrl, initialKey }: Props) {
+export default function SettingsModal({
+  onSave,
+  onClose,
+  initialUrl,
+  initialKey,
+  openLinksInBrowser,
+  onOpenLinksInBrowserChange,
+}: Props) {
   const [url, setUrl] = useState(initialUrl || '');
   const [key, setKey] = useState(initialKey || '');
   const [testing, setTesting] = useState(false);
@@ -124,6 +133,17 @@ export default function SettingsModal({ onSave, onClose, initialUrl, initialKey 
               Find this in Settings → API Keys in your Miniflux web interface
             </span>
           </div>
+          <label className="settings-toggle">
+            <input
+              type="checkbox"
+              checked={openLinksInBrowser}
+              onChange={(e) => onOpenLinksInBrowserChange(e.target.checked)}
+            />
+            <span>
+              <strong>Open links in default browser</strong>
+              <small>Use your system browser instead of opening links in FluxPane.</small>
+            </span>
+          </label>
           <div className="modal-actions">
             <button
               type="button"
