@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No changes yet.
 
+## [1.3.0] - 2026-10-05
+
+### Added
+- Add Feed now auto-discovers the RSS/Atom feed from a website URL; if several feeds are found, you choose which to subscribe to
+
 ## [1.2.0] - 2026-10-05
 
 ### Added

@@ -20,6 +20,12 @@ export interface Feed {
   password?: string;
 }
 
+export interface DiscoveredFeed {
+  url: string;
+  title: string;
+  type: string;
+}
+
 export interface Category {
   id: number;
   user_id: number;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Category } from '../types/miniflux';
+import type { Category, DiscoveredFeed } from '../types/miniflux';
 import { miniflux } from '../services/miniflux';
 
 interface Props {
@@ -16,6 +16,8 @@ export default function AddFeedModal({ categories, initialCategoryId, onClose, o
   const [categoryId, setCategoryId] = useState<string>(initialCategoryId ? String(initialCategoryId) : '');
   const [newCategoryTitle, setNewCategoryTitle] = useState('');
   const creatingCategory = categoryId === NEW_CATEGORY;
+  const [candidates, setCandidates] = useState<DiscoveredFeed[]>([]);
+  const [selectedCandidate, setSelectedCandidate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,12 +27,27 @@ export default function AddFeedModal({ categories, initialCategoryId, onClose, o
     setError('');
 
     try {
+      let resolvedUrl = feedUrl.trim();
+      if (candidates.length > 0) {
+        resolvedUrl = selectedCandidate;
+      } else {
+        // Resolve a website URL to its RSS/Atom feed; if discovery fails, let createFeed try the URL as-is
+        const found = await miniflux.discoverFeeds(resolvedUrl).catch(() => []);
+        if (found.length > 1) {
+          setCandidates(found);
+          setSelectedCandidate(found[0].url);
+          setSubmitting(false);
+          return;
+        }
+        if (found.length === 1) resolvedUrl = found[0].url;
+      }
+
       let targetCategoryId = categoryId && !creatingCategory ? Number(categoryId) : undefined;
       if (creatingCategory) {
         const created = await miniflux.createCategory(newCategoryTitle.trim());
         targetCategoryId = created.id;
       }
-      await miniflux.createFeed(feedUrl.trim(), targetCategoryId);
+      await miniflux.createFeed(resolvedUrl,targetCategoryId);
       onAdded();
       onClose();
     } catch (err) {
@@ -64,12 +81,25 @@ export default function AddFeedModal({ categories, initialCategoryId, onClose, o
             <input
               type="url"
               value={feedUrl}
-              onChange={(e) => setFeedUrl(e.target.value)}
-              placeholder="https://example.com/feed.xml"
+              onChange={(e) => {
+                setFeedUrl(e.target.value);
+                setCandidates([]);
+              }}
+              placeholder="https://example.com (feed is found automatically)"
               required
               autoFocus
             />
           </div>
+          {candidates.length > 0 && (
+            <div className="form-group">
+              <label>Multiple feeds found — choose one</label>
+              <select value={selectedCandidate} onChange={(e) => setSelectedCandidate(e.target.value)}>
+                {candidates.map((c) => (
+                  <option key={c.url} value={c.url}>{c.title || c.url} ({c.type})</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="form-group">
             <label>Category (optional)</label>
             <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>

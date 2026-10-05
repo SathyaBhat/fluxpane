@@ -1,5 +1,5 @@
 import { fetch as tauriFetch, ResponseType, Body } from '@tauri-apps/api/http';
-import type { Feed, Category, Entry, EntriesResponse, User, MinifluxConfig, FeedCounters } from '../types/miniflux';
+import type { DiscoveredFeed, Feed, Category, Entry, EntriesResponse, User, MinifluxConfig, FeedCounters } from '../types/miniflux';
 
 // Check if running in Tauri environment
 const isTauri = () => {
@@ -158,6 +158,10 @@ class MinifluxClient {
 
   async getCategories(): Promise<Category[]> {
     return this.get('/categories');
+  }
+
+  async discoverFeeds(url: string): Promise<DiscoveredFeed[]> {
+    return this.post('/discover', { url });
   }
 
   async createCategory(title: string): Promise<Category> {
