@@ -103,7 +103,10 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1>🗞️ FluxPane</h1>
+        <h1>
+          <img src="/icon.png" alt="" className="app-icon" />
+          FluxPane
+        </h1>
         <div
           className={`feed-item ${selectedFeedId === null && selectedCategoryId === null ? 'active' : ''}`}
           onClick={() => onFeedSelect(null, 'All Unread')}

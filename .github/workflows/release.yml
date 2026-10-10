@@ -16,7 +16,20 @@ permissions:
 
 jobs:
   publish:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: ''
+            rust_targets: ''
+          - os: macos-latest
+            args: --target aarch64-apple-darwin
+            rust_targets: aarch64-apple-darwin
+          - os: macos-latest
+            args: --target x86_64-apple-darwin
+            rust_targets: x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
     env:
       RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
@@ -32,6 +45,8 @@ jobs:
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
 
       - name: Install dependencies
         run: npm ci
@@ -45,15 +60,16 @@ jobs:
             throw "Release tag $env:RELEASE_TAG does not match app version $expectedTag"
           }
 
-      - name: Build and publish Windows installers
+      - name: Build and publish installers
         uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: npm run tauri
+          args: ${{ matrix.args }}
           tagName: v__VERSION__
           releaseName: FluxPane v__VERSION__
-          releaseBody: Download the Windows installer from the release assets.
-          releaseDraft: false
+          releaseBody: Download the installer for your platform from the release assets.
+          releaseDraft: true
           prerelease: false
           generateReleaseNotes: true

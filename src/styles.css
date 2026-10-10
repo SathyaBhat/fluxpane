@@ -96,6 +96,15 @@ body {
   font-size: 1.5rem;
   color: var(--accent);
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-header .app-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
 }
 
 .feed-categories {

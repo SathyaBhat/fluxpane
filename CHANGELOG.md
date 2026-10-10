@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No changes yet.
 
+## [1.4.0] - 2026-10-11
+
+### Added
+- macOS support: release builds now include Apple Silicon and Intel installers alongside Windows
+- macOS menu bar icon that adapts to light and dark menu bars
+- Clicking the Dock icon on macOS reopens the window after it was closed
+- App icon shown next to the title in the sidebar
+
+### Changed
+- Closing the window now hides it to the system tray instead of destroying it, so "Show" in the tray menu always works
+- CI validates the app on both Windows and macOS
+
 ## [1.3.1] - 2026-10-05
 
 ### Fixed
